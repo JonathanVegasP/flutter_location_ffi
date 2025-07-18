@@ -1,0 +1,35 @@
+PODS:
+  - Flutter (1.0.0)
+  - flutter_location_ffi (1.0.0):
+    - Flutter
+    - result_channel
+  - integration_test (0.0.1):
+    - Flutter
+  - result_channel (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - flutter_location_ffi (from `.symlinks/plugins/flutter_location_ffi/ios`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
+  - result_channel (from `.symlinks/plugins/result_channel/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  flutter_location_ffi:
+    :path: ".symlinks/plugins/flutter_location_ffi/ios"
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
+  result_channel:
+    :path: ".symlinks/plugins/result_channel/ios"
+
+SPEC CHECKSUMS:
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  flutter_location_ffi: 4df1ddac7b7922d32c74ec8109a4efbda7e7e50a
+  integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
+  result_channel: 850b75e0b4b3c17151d3e15a20e6a644fbccef16
+
+PODFILE CHECKSUM: 4305caec6b40dde0ae97be1573c53de1882a07e5
+
+COCOAPODS: 1.16.2

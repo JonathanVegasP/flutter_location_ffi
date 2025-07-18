@@ -97,7 +97,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.0.1"
+    version: "0.5.0"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -198,10 +198,10 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "21ad5927eb5279e5511782ed7c5dc737fcfa472a"
+      resolved-ref: f21f0070ad98a53fc79ad1aa11cfdef369e2e865
       url: "https://github.com/JonathanVegasP/result_channel.git"
     source: git
-    version: "0.9.0"
+    version: "0.9.3"
   sky_engine:
     dependency: transitive
     description: flutter
