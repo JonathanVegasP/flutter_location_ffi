@@ -165,6 +165,7 @@ The `example/` directory contains a sample Flutter app demonstrating how to use 
   - `speed` (required)
   - `speedAccuracy` (required)
   - `floor` (optional)
+- [ ] Create unit and integration tests to validate plugin functionality.
 
 ### Contributing
 Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on submitting issues, pull requests, or feature requests.
