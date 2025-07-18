@@ -153,6 +153,19 @@ The `example/` directory contains a sample Flutter app demonstrating how to use 
 - **Simplicity**: Clean API with a clear `LocationPermission` enum and `LocationData` class for easy integration.
 - **Cross-Platform**: Consistent behavior across iOS (using `CoreLocation`) and Android.
 
+### TODO
+- [ ] Add support for configuring location settings (e.g., accuracy, update interval).
+- [ ] Implement background location tracking with appropriate platform configurations.
+- [ ] Update `LocationData` class to include additional fields:
+  - `timestamp` (required)
+  - `altitude` (required)
+  - `altitudeAccuracy` (required)
+  - `heading` (required)
+  - `headingAccuracy` (required)
+  - `speed` (required)
+  - `speedAccuracy` (required)
+  - `floor` (optional)
+
 ### Contributing
 Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on submitting issues, pull requests, or feature requests.
 
