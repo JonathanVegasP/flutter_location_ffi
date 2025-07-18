@@ -47,7 +47,7 @@ FFI_PLUGIN_EXPORT void flutter_location_ffi_check_and_request_permission(Callbac
     env->CallStaticVoidMethod(g_plugin, jmethodID1, instance);
 }
 
-FFI_PLUGIN_EXPORT ResultNative *flutter_location_ffi_check_permission() {
+FFI_PLUGIN_EXPORT ResultNative *flutter_location_ffi_check_permission(void) {
     JNIEnvAttachGuard envAttachGuard(g_javaVm);
     JNIEnv *env = envAttachGuard;
     jmethodID jmethodID1 = env->GetStaticMethodID(g_plugin, "checkPermission", "()[B");
@@ -83,7 +83,7 @@ FFI_PLUGIN_EXPORT void flutter_location_ffi_start_updates(Callback callback) {
     env->CallStaticVoidMethod(g_plugin, jmethodID1, instance);
 }
 
-FFI_PLUGIN_EXPORT void flutter_location_ffi_stop_updates() {
+FFI_PLUGIN_EXPORT void flutter_location_ffi_stop_updates(void) {
     JNIEnvAttachGuard jniEnvAttachGuard(g_javaVm);
     JNIEnv *env = jniEnvAttachGuard;
 
@@ -92,7 +92,7 @@ FFI_PLUGIN_EXPORT void flutter_location_ffi_stop_updates() {
     env->CallStaticVoidMethod(g_plugin, jmethodID1);
 }
 
-FFI_PLUGIN_EXPORT void flutter_location_ffi_open_app_settings() {
+FFI_PLUGIN_EXPORT void flutter_location_ffi_open_app_settings(void) {
     JNIEnvAttachGuard jniEnvAttachGuard(g_javaVm);
     JNIEnv *env = jniEnvAttachGuard;
 
@@ -101,7 +101,7 @@ FFI_PLUGIN_EXPORT void flutter_location_ffi_open_app_settings() {
     env->CallStaticVoidMethod(g_plugin, jmethodID1);
 }
 
-FFI_PLUGIN_EXPORT void flutter_location_ffi_open_location_settings() {
+FFI_PLUGIN_EXPORT void flutter_location_ffi_open_location_settings(void) {
     JNIEnvAttachGuard jniEnvAttachGuard(g_javaVm);
     JNIEnv *env = jniEnvAttachGuard;
 
