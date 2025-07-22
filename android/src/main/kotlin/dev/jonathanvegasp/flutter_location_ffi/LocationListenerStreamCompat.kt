@@ -9,13 +9,18 @@ import androidx.core.location.LocationManagerCompat
 import dev.jonathanvegasp.result_channel.ResultChannel
 
 class LocationListenerStreamCompat(
+    private var settings: AndroidLocationSettings,
     private val channel: ResultChannel,
     private val locationManager: LocationManager
 ) : LocationListenerCompat, Destroyable {
+    fun setSettings(settings: AndroidLocationSettings) {
+        this.settings = settings
+    }
+
     override fun onLocationChanged(location: Location) {
         val accuracy = if (location.hasAccuracy()) location.accuracy else 0.0F
 
-        if (accuracy > 50.0F) return
+        if (accuracy > settings.accuracyFilter) return
 
         channel.success(
             LocationDataFactory.create(

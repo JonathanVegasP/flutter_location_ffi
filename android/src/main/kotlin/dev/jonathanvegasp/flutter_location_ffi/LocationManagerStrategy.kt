@@ -16,6 +16,7 @@ class LocationManagerStrategy(
 
     override fun setSettings(settings: AndroidLocationSettings) {
         this.settings = settings
+        locationListenerStreamCompat?.setSettings(settings)
     }
 
     private fun buildLocationRequest(): LocationRequestCompat =
@@ -42,7 +43,7 @@ class LocationManagerStrategy(
             locationManager,
             LocationManager.GPS_PROVIDER,
             buildLocationRequest(),
-            LocationListenerCallbackCompat(result, locationManager),
+            LocationListenerCallbackCompat(settings, result, locationManager),
             Looper.myLooper()!!
         )
     }
@@ -55,7 +56,7 @@ class LocationManagerStrategy(
             result.success(LocationDataFactory.create())
         }
 
-        val listener = LocationListenerStreamCompat(result, locationManager)
+        val listener = LocationListenerStreamCompat(settings, result, locationManager)
 
         LocationManagerCompat.requestLocationUpdates(
             locationManager,

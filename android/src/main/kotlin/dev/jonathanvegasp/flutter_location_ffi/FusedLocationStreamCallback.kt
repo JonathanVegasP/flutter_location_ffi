@@ -7,17 +7,22 @@ import com.google.android.gms.location.LocationResult
 import dev.jonathanvegasp.result_channel.ResultChannel
 
 class FusedLocationStreamCallback(
+    private var settings: AndroidLocationSettings,
     private val channel: ResultChannel,
     private val statusChecker: StatusChecker,
     private val locationProviderClient: FusedLocationProviderClient
 ) : LocationCallback(), Destroyable {
+
+    fun setSettings(settings: AndroidLocationSettings) {
+        this.settings = settings
+    }
 
     override fun onLocationResult(p0: LocationResult) {
         val location = p0.lastLocation ?: return
 
         val accuracy = if (location.hasAccuracy()) location.accuracy else 0.0F
 
-        if (accuracy > 50.0F) return
+        if (accuracy > settings.accuracyFilter) return
 
         channel.success(
             LocationDataFactory.create(

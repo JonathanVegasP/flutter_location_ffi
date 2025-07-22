@@ -66,23 +66,38 @@ import 'package:flutter_location_ffi/flutter_location_ffi.dart';
 void main() {
   FlutterLocation.setSettings(
     const LocationSettings(
-        intervalMs: 1000,
-        priority: LocationPriority.best,
-        distanceFilter: 1,
-        /// When `minUpdateDistanceMeters`, `priority`, or `intervalMs` are set, 
-        /// they override the corresponding values in `distanceFilter`, `priority`, and `intervalMs`.
-        androidLocationSettings: AndroidLocationSettings(
-          priority: LocationPriority.high,
-          waitForAccurateLocation: true,
-          maxUpdates: 10, /// -1 for unlimited
-          durationMs: 60000, /// -1 for unlimited duration
-          minUpdateIntervalMs: 1000, /// defaults to [LocationSettings.intervalMs]
-          maxUpdateDelayMs: 1000, /// defaults to 0
-          intervalMs: 1050, /// if not changed defaults to [LocationSettings.intervalMs]
-          minUpdateDistanceMeters: 2, /// if not changed defaults to [LocationSettings.distanceFilter]
-          granularity: AndroidGranularity.fine, /// Defaults to [AndroidGranularity.permissionLevel]
-          maxUpdateAgeMillis: 1000, /// Defaults to 0 for no caching location
-        )
+            intervalMs: 10000,
+            priority: LocationPriority.medium,
+            distanceFilter: 0,
+            accuracyFilter: 200.0,
+            /// When `minUpdateDistanceMeters`, `priority`, `accuracyFilter`, or `intervalMs` are set,
+            /// they override the corresponding values in `distanceFilter`, `priority`, and `intervalMs`.
+            androidLocationSettings: AndroidLocationSettings(
+              priority: LocationPriority.medium,
+              accuracyFilter: 200.0,
+              waitForAccurateLocation: true,
+              maxUpdates: -1,
+              durationMs: -1,
+              minUpdateIntervalMs: 10000,
+              maxUpdateDelayMs: 0,
+              intervalMs: 10000,
+              minUpdateDistanceMeters: 0,
+              granularity: AndroidGranularity.permissionLevel,
+              maxUpdateAgeMillis: 10000,
+            ),
+            /// When `distanceFilter`, `priority`, `accuracyFilter`, or `intervalMs` are set,
+            /// they override the corresponding values in `distanceFilter`, `priority`, and `intervalMs`.
+            appleLocationSettings: AppleLocationSettings(
+              accuracyFilter: 200.0,
+              distanceFilter: -1,
+              priority: LocationPriority.medium,
+              intervalMs: 10000,
+              activityType: ActivityType.other,
+              allowsBackgroundLocationUpdates: false,
+              headingFilter: -1,
+              pausesLocationUpdatesAutomatically: true,
+              showBackgroundLocationIndicator: true,
+            )
     ),
   );
 }

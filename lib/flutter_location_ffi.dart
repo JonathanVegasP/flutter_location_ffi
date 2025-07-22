@@ -35,6 +35,9 @@ final class AndroidLocationSettings {
   /// Defaults to 10000 (10 seconds)
   final int? intervalMs;
 
+  /// Defaults to 200.0
+  final double? accuracyFilter;
+
   /// Defaults to permissionLevel
   final AndroidGranularity granularity;
 
@@ -62,6 +65,7 @@ final class AndroidLocationSettings {
   const AndroidLocationSettings({
     this.priority,
     this.intervalMs,
+    this.accuracyFilter,
     this.granularity = AndroidGranularity.permissionLevel,
     this.waitForAccurateLocation = true,
     this.durationMs = -1,
@@ -73,45 +77,103 @@ final class AndroidLocationSettings {
   });
 }
 
+enum ActivityType {
+  other,
+  automotiveNavigation,
+  fitness,
+  otherNavigation,
+  airbone,
+}
+
+final class AppleLocationSettings {
+  final LocationPriority? priority;
+  final int? intervalMs;
+  final double? distanceFilter;
+  final double? accuracyFilter;
+  final ActivityType activityType;
+  final bool pausesLocationUpdatesAutomatically;
+  final bool allowsBackgroundLocationUpdates;
+  final bool showBackgroundLocationIndicator;
+  final double headingFilter;
+
+  const AppleLocationSettings({
+    this.priority,
+    this.intervalMs,
+    this.distanceFilter,
+    this.accuracyFilter,
+    this.activityType = ActivityType.other,
+    this.pausesLocationUpdatesAutomatically = true,
+    this.allowsBackgroundLocationUpdates = false,
+    this.showBackgroundLocationIndicator = true,
+    this.headingFilter = -1,
+  });
+}
+
 final class LocationSettings {
   final LocationPriority priority;
   final int intervalMs;
-  final double distanceFilter;
+  final double? distanceFilter;
+  final double accuracyFilter;
   final AndroidLocationSettings? androidLocationSettings;
+  final AppleLocationSettings? appleLocationSettings;
 
   const LocationSettings({
     this.priority = LocationPriority.medium,
     this.intervalMs = 10000,
-    this.distanceFilter = 0,
+    this.distanceFilter,
+    this.accuracyFilter = 200.0,
     this.androidLocationSettings,
+    this.appleLocationSettings,
   });
 
   List<Object?> encode() {
-    if (Platform.isAndroid) {
-      final android =
-          androidLocationSettings ??
-          AndroidLocationSettings(
-            priority: priority,
-            intervalMs: intervalMs,
-            minUpdateDistanceMeters: distanceFilter,
-            minUpdateIntervalMs: intervalMs,
-          );
+    switch (Platform.operatingSystem) {
+      case 'android':
+        final android =
+            androidLocationSettings ??
+            AndroidLocationSettings(
+              priority: priority,
+              intervalMs: intervalMs,
+              minUpdateDistanceMeters: distanceFilter ?? 0,
+              minUpdateIntervalMs: intervalMs,
+            );
 
-      return [
-        (android.priority ?? priority).index,
-        android.intervalMs ?? intervalMs,
-        android.granularity.index,
-        android.waitForAccurateLocation,
-        android.durationMs,
-        android.minUpdateDistanceMeters ?? distanceFilter,
-        android.minUpdateIntervalMs ?? intervalMs,
-        android.maxUpdateDelayMs,
-        android.maxUpdateAgeMillis,
-        android.maxUpdates,
-      ];
+        return [
+          (android.priority ?? priority).index,
+          android.intervalMs ?? intervalMs,
+          android.accuracyFilter ?? accuracyFilter,
+          android.granularity.index,
+          android.waitForAccurateLocation,
+          android.durationMs,
+          android.minUpdateDistanceMeters ?? distanceFilter ?? 0,
+          android.minUpdateIntervalMs ?? intervalMs,
+          android.maxUpdateDelayMs,
+          android.maxUpdateAgeMillis,
+          android.maxUpdates,
+        ];
+      case 'ios':
+        final ios =
+            appleLocationSettings ??
+            AppleLocationSettings(
+              priority: priority,
+              intervalMs: intervalMs,
+              distanceFilter: distanceFilter ?? -1,
+              accuracyFilter: accuracyFilter,
+            );
+        return [
+          (ios.priority ?? priority).index,
+          ios.intervalMs ?? intervalMs,
+          ios.distanceFilter ?? distanceFilter ?? -1,
+          ios.accuracyFilter ?? accuracyFilter,
+          ios.activityType.index,
+          ios.pausesLocationUpdatesAutomatically,
+          ios.allowsBackgroundLocationUpdates,
+          ios.showBackgroundLocationIndicator,
+          ios.headingFilter,
+        ];
+      default:
+        throw 'Unsupported OS';
     }
-
-    return [];
   }
 }
 

@@ -7,6 +7,7 @@ import com.google.android.gms.location.LocationResult
 import dev.jonathanvegasp.result_channel.ResultChannel
 
 class FusedLocationCallback(
+    private val settings: AndroidLocationSettings,
     private val channel: ResultChannel,
     private val statusChecker: StatusChecker,
     private val locationProviderClient: FusedLocationProviderClient
@@ -16,7 +17,7 @@ class FusedLocationCallback(
 
         val accuracy = if (location.hasAccuracy()) location.accuracy else 0.0F
 
-        if (accuracy > 50.0F) return
+        if (accuracy > settings.accuracyFilter) return
 
         locationProviderClient.removeLocationUpdates(this)
 

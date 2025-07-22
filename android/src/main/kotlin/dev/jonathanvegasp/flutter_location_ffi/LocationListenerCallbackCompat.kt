@@ -9,6 +9,7 @@ import androidx.core.location.LocationManagerCompat
 import dev.jonathanvegasp.result_channel.ResultChannel
 
 class LocationListenerCallbackCompat(
+    private val settings: AndroidLocationSettings,
     private val channel: ResultChannel,
     private val locationManager: LocationManager
 ) : LocationListenerCompat {

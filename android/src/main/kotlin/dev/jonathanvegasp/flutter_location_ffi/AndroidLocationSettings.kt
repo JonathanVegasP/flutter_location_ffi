@@ -6,6 +6,7 @@ import dev.jonathanvegasp.result_channel.toLong
 class AndroidLocationSettings private constructor(
     val priority: AndroidLocationPriorityStrategy,
     val intervalMs: Long,
+    val accuracyFilter: Float,
     val granularity: Int,
     val waitForAccurateLocation: Boolean,
     val durationMs: Long,
@@ -18,6 +19,8 @@ class AndroidLocationSettings private constructor(
     companion object {
         fun default(priority: AndroidLocationPriorityStrategy): AndroidLocationSettings {
             val intervalMs = 10000L
+
+            val accuracyFilter = 200.0F
 
             val granularity = Granularity.GRANULARITY_PERMISSION_LEVEL
 
@@ -36,6 +39,7 @@ class AndroidLocationSettings private constructor(
             return AndroidLocationSettings(
                 priority,
                 intervalMs,
+                accuracyFilter,
                 granularity,
                 waitForAccurateLocation,
                 durationMs,
@@ -58,27 +62,30 @@ class AndroidLocationSettings private constructor(
 
             val intervalMs = data[1].toLong()
 
-            val granularity = data[2] as Int
+            val accuracyFilter = (data[2] as Double).toFloat()
 
-            val waitForAccurateLocation = data[3] as Boolean
+            val granularity = data[3] as Int
 
-            var durationMs = data[4].toLong()
+            val waitForAccurateLocation = data[4] as Boolean
+
+            var durationMs = data[5].toLong()
 
             durationMs = if (durationMs == -1L) Long.MAX_VALUE else durationMs
 
-            val minUpdateDistanceMeters = (data[5] as Double).toFloat()
+            val minUpdateDistanceMeters = (data[6] as Double).toFloat()
 
-            val minUpdateIntervalMs = data[6].toLong()
+            val minUpdateIntervalMs = data[7].toLong()
 
-            val maxUpdateDelayMs = data[7].toLong()
+            val maxUpdateDelayMs = data[8].toLong()
 
-            val maxUpdateAgeMillis = data[8].toLong()
+            val maxUpdateAgeMillis = data[9].toLong()
 
-            val maxUpdates = data[9] as Int
+            val maxUpdates = data[10] as Int
 
             return AndroidLocationSettings(
                 priority,
                 intervalMs,
+                accuracyFilter,
                 granularity,
                 waitForAccurateLocation,
                 durationMs,

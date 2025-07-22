@@ -16,6 +16,7 @@ class FusedLocationStrategy(
 
     override fun setSettings(settings: AndroidLocationSettings) {
         this.settings = settings
+        locationCallback?.setSettings(settings)
     }
 
     private fun buildLocationRequest(): LocationRequest =
@@ -43,7 +44,7 @@ class FusedLocationStrategy(
 
         locationProviderClient.requestLocationUpdates(
             buildLocationRequest(),
-            FusedLocationCallback(result, statusChecker, locationProviderClient),
+            FusedLocationCallback(settings, result, statusChecker, locationProviderClient),
             Looper.myLooper()
         )
     }
@@ -62,7 +63,8 @@ class FusedLocationStrategy(
         }
 
         val locationProviderClient = locationProviderClient
-        val callback = FusedLocationStreamCallback(result, statusChecker, locationProviderClient)
+        val callback =
+            FusedLocationStreamCallback(settings, result, statusChecker, locationProviderClient)
 
         locationProviderClient.requestLocationUpdates(
             buildLocationRequest(),
