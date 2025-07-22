@@ -16,6 +16,105 @@ final _lib = (() {
 
 enum LocationPermission { denied, neverAskAgain, granted }
 
+enum LocationPriority {
+  reduced,
+  lowest,
+  low,
+  medium,
+  high,
+  best,
+  bestForNavigation,
+}
+
+enum AndroidGranularity { permissionLevel, coarse, fine }
+
+final class AndroidLocationSettings {
+  /// Defaults to [LocationPriority.medium]
+  final LocationPriority? priority;
+
+  /// Defaults to 10000 (10 seconds)
+  final int? intervalMs;
+
+  /// Defaults to permissionLevel
+  final AndroidGranularity granularity;
+
+  /// Defaults to true
+  final bool waitForAccurateLocation;
+
+  /// Defaults to -1 (Long.MaxValue on Kotlin Side)
+  final int durationMs;
+
+  /// Defaults to 0.0
+  final double? minUpdateDistanceMeters;
+
+  /// Defaults to [intervalMs]
+  final int? minUpdateIntervalMs;
+
+  /// Defaults to 0
+  final int maxUpdateDelayMs;
+
+  /// Defaults to 0
+  final int maxUpdateAgeMillis;
+
+  /// Defaults to -1 (Int.MaxValue on Kotlin Side)
+  final int maxUpdates;
+
+  const AndroidLocationSettings({
+    this.priority,
+    this.intervalMs,
+    this.granularity = AndroidGranularity.permissionLevel,
+    this.waitForAccurateLocation = true,
+    this.durationMs = -1,
+    this.minUpdateDistanceMeters,
+    this.minUpdateIntervalMs,
+    this.maxUpdateDelayMs = 0,
+    this.maxUpdateAgeMillis = 0,
+    this.maxUpdates = -1,
+  });
+}
+
+final class LocationSettings {
+  final LocationPriority priority;
+  final int intervalMs;
+  final double distanceFilter;
+  final AndroidLocationSettings? androidLocationSettings;
+
+  const LocationSettings({
+    this.priority = LocationPriority.medium,
+    this.intervalMs = 10000,
+    this.distanceFilter = 0,
+    this.androidLocationSettings,
+  });
+
+  List<Object?> encode() {
+    if (Platform.isAndroid) {
+      final android =
+          androidLocationSettings ??
+          AndroidLocationSettings(
+            priority: priority,
+            intervalMs: intervalMs,
+            minUpdateDistanceMeters: distanceFilter,
+            minUpdateIntervalMs: intervalMs,
+          );
+
+      return [
+        (android.priority ?? priority).index,
+        android.intervalMs ?? intervalMs,
+        android.granularity.index,
+        android.waitForAccurateLocation,
+        android.durationMs,
+        android.minUpdateDistanceMeters ?? distanceFilter,
+        android.minUpdateIntervalMs ?? intervalMs,
+        android.maxUpdateDelayMs,
+        android.maxUpdateAgeMillis,
+        android.maxUpdates,
+      ];
+    }
+
+    return [];
+  }
+}
+
 final class LocationData {
   final bool isGpsEnabled;
   final double latitude;
@@ -32,6 +131,12 @@ final class LocationData {
     return LocationData(data as List<Object?>);
   }
 }
+
+final _setSettings = _lib
+    .lookup<ResultChannelVoidFunctionWithArgs>(
+      'flutter_location_ffi_set_settings',
+    )
+    .asFunction<ResultChannelVoidFunctionWithArgsDart>();
 
 final _checkAndRequestPermission = _lib
     .lookup<ResultChannelCallbackFunction>(
@@ -60,7 +165,9 @@ final _openAppSettings = _lib
     .asFunction<ResultChannelVoidFunctionDart>();
 
 final _openLocationSettings = _lib
-    .lookup<ResultChannelVoidFunction>('flutter_location_ffi_open_location_settings')
+    .lookup<ResultChannelVoidFunction>(
+      'flutter_location_ffi_open_location_settings',
+    )
     .asFunction<ResultChannelVoidFunctionDart>();
 
 NativeCallable<ResultChannelCallback>? _ptr;
@@ -105,6 +212,19 @@ void _onStop() {
 }
 
 abstract final class FlutterLocation {
+  static void setSettings(LocationSettings settings) {
+    final result = ResultDart(
+      data: settings.encode(),
+      status: ResultStatus.ok,
+    ).toResultNative();
+
+    try {
+      _setSettings(result);
+    } finally {
+      result.free();
+    }
+  }
+
   static Future<LocationPermission> checkAndRequestPermission() async {
     final handler = ResultChannel.createHandler();
 

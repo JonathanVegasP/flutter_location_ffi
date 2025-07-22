@@ -8,18 +8,25 @@ import androidx.core.location.LocationManagerCompat
 import androidx.core.location.LocationRequestCompat
 import dev.jonathanvegasp.result_channel.ResultChannel
 
-class LocationManagerStrategy(private val locationManager: LocationManager) : LocationStrategy {
-    companion object {
-        @JvmStatic
-        private fun buildLocationRequest(): LocationRequestCompat =
-            LocationRequestCompat.Builder(1000L)
-                .setQuality(LocationRequestCompat.QUALITY_HIGH_ACCURACY)
-                .setMinUpdateDistanceMeters(1F)
-                .setMinUpdateIntervalMillis(1000L)
-                .build()
+class LocationManagerStrategy(
+    private val locationManager: LocationManager,
+    private var settings: AndroidLocationSettings
+) : LocationStrategy {
+    private var locationListenerStreamCompat: LocationListenerStreamCompat? = null
+
+    override fun setSettings(settings: AndroidLocationSettings) {
+        this.settings = settings
     }
 
-    private var locationListenerStreamCompat: LocationListenerStreamCompat? = null
+    private fun buildLocationRequest(): LocationRequestCompat =
+        LocationRequestCompat.Builder(settings.intervalMs)
+            .setQuality(settings.priority.level)
+            .setDurationMillis(settings.durationMs)
+            .setMinUpdateDistanceMeters(settings.minUpdateDistanceMeters)
+            .setMinUpdateIntervalMillis(settings.minUpdateIntervalMs)
+            .setMaxUpdateDelayMillis(settings.maxUpdateDelayMs)
+            .setMaxUpdates(settings.maxUpdates)
+            .build()
 
     @RequiresPermission(anyOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     override fun getCurrent(result: ResultChannel) {

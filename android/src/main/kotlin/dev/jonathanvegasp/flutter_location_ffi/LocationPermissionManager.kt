@@ -2,7 +2,6 @@ package dev.jonathanvegasp.flutter_location_ffi
 
 import android.Manifest
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -11,7 +10,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import dev.jonathanvegasp.result_channel.ResultChannel
 
-class LocationPermissionManager(private val activity: Activity, private val context: Context) :
+class LocationPermissionManager(private val activity: Activity) :
     PermissionManager {
     private var channel: ResultChannel? = null
 
@@ -64,8 +63,9 @@ class LocationPermissionManager(private val activity: Activity, private val cont
     }
 
     override fun openAppSettings() {
+        val activity = activity
         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-            data = Uri.fromParts("package", context.packageName, null)
+            data = Uri.fromParts("package", activity.packageName, null)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or
                     Intent.FLAG_ACTIVITY_SINGLE_TOP or
@@ -73,7 +73,7 @@ class LocationPermissionManager(private val activity: Activity, private val cont
                     Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
         }
 
-        ContextCompat.startActivity(context, intent, null)
+        ContextCompat.startActivity(activity, intent, null)
     }
 
     override fun openPermissionSettings() {
@@ -85,7 +85,7 @@ class LocationPermissionManager(private val activity: Activity, private val cont
                     Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
         }
 
-        ContextCompat.startActivity(context, intent, null)
+        ContextCompat.startActivity(activity, intent, null)
     }
 
     override fun onRequestPermissionsResult(

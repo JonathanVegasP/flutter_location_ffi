@@ -4,6 +4,7 @@
 #include "result_channel.h"
 
 extern "C" {
+FFI_PLUGIN_EXPORT void flutter_location_ffi_set_settings(ResultNative *args);
 FFI_PLUGIN_EXPORT void flutter_location_ffi_check_and_request_permission(Callback callback);
 FFI_PLUGIN_EXPORT ResultNative *flutter_location_ffi_check_permission(void);
 FFI_PLUGIN_EXPORT void flutter_location_ffi_get_current(Callback callback);

@@ -59,6 +59,35 @@ Run `flutter pub get` to install the package.
 
 The `flutter_location_ffi` plugin provides a clean API for managing location permissions and accessing location data via FFI. Below are examples of how to use the plugin's main features. For a complete demonstration, see the `example/` directory.
 
+#### Setting new Location Settings
+```dart
+import 'package:flutter_location_ffi/flutter_location_ffi.dart';
+
+void main() {
+  FlutterLocation.setSettings(
+    const LocationSettings(
+        intervalMs: 1000,
+        priority: LocationPriority.best,
+        distanceFilter: 1,
+        /// When `minUpdateDistanceMeters`, `priority`, or `intervalMs` are set, 
+        /// they override the corresponding values in `distanceFilter`, `priority`, and `intervalMs`.
+        androidLocationSettings: AndroidLocationSettings(
+          priority: LocationPriority.high,
+          waitForAccurateLocation: true,
+          maxUpdates: 10, /// -1 for unlimited
+          durationMs: 60000, /// -1 for unlimited duration
+          minUpdateIntervalMs: 1000, /// defaults to [LocationSettings.intervalMs]
+          maxUpdateDelayMs: 1000, /// defaults to 0
+          intervalMs: 1050, /// if not changed defaults to [LocationSettings.intervalMs]
+          minUpdateDistanceMeters: 2, /// if not changed defaults to [LocationSettings.distanceFilter]
+          granularity: AndroidGranularity.fine, /// Defaults to [AndroidGranularity.permissionLevel]
+          maxUpdateAgeMillis: 1000, /// Defaults to 0 for no caching location
+        )
+    ),
+  );
+}
+```
+
 #### Checking Location Permission
 ```dart
 import 'package:flutter_location_ffi/flutter_location_ffi.dart';
@@ -155,17 +184,23 @@ The `example/` directory contains a sample Flutter app demonstrating how to use 
 
 ### TODO
 - [ ] Add support for configuring location settings (e.g., accuracy, update interval).
+  - [x] Android
+  - [ ] iOS
 - [ ] Implement background location tracking with appropriate platform configurations.
+  - [ ] Android
+  - [ ] iOS
 - [ ] Update `LocationData` class to include additional fields:
-  - `timestamp` (required)
-  - `altitude` (required)
-  - `altitudeAccuracy` (required)
-  - `heading` (required)
-  - `headingAccuracy` (required)
-  - `speed` (required)
-  - `speedAccuracy` (required)
-  - `floor` (optional)
+  - [ ] `timestamp` (required)
+  - [ ] `altitude` (required)
+  - [ ] `altitudeAccuracy` (required)
+  - [ ] `heading` (required)
+  - [ ] `headingAccuracy` (required)
+  - [ ] `speed` (required)
+  - [ ] `speedAccuracy` (required)
+  - [ ] `floor` (optional)
 - [ ] Create unit and integration tests to validate plugin functionality.
+  - [ ] Android
+  - [ ] iOS
 
 ### Contributing
 Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on submitting issues, pull requests, or feature requests.

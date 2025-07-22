@@ -34,6 +34,28 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _onInit() async {
+    FlutterLocation.setSettings(
+      const LocationSettings(
+        intervalMs: 1000,
+        priority: LocationPriority.best,
+        distanceFilter: 1,
+          /// When `minUpdateDistanceMeters`, `priority`, or `intervalMs` are set,
+          /// they override the corresponding values in `distanceFilter`, `priority`, and `intervalMs`.
+        androidLocationSettings: AndroidLocationSettings(
+          priority: LocationPriority.high,
+          waitForAccurateLocation: true,
+          maxUpdates: 10, /// -1 for unlimited
+          durationMs: 60000, /// -1 for unlimited duration
+          minUpdateIntervalMs: 1000, /// defaults to [LocationSettings.intervalMs]
+          maxUpdateDelayMs: 1000, /// defaults to 0
+          intervalMs: 1050, /// if not changed defaults to [LocationSettings.intervalMs]
+          minUpdateDistanceMeters: 2, /// if not changed defaults to [LocationSettings.distanceFilter]
+          granularity: AndroidGranularity.fine, /// Defaults to [AndroidGranularity.permissionLevel]
+          maxUpdateAgeMillis: 1000, /// Defaults to 0 for no caching location
+        )
+      ),
+    );
+
     _subscription?.cancel();
 
     final permission = await FlutterLocation.checkAndRequestPermission();

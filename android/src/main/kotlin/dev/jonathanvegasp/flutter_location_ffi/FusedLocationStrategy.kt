@@ -5,24 +5,29 @@ import android.os.Looper
 import androidx.annotation.RequiresPermission
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.Priority
 import dev.jonathanvegasp.result_channel.ResultChannel
 
 class FusedLocationStrategy(
     private val locationProviderClient: FusedLocationProviderClient,
-    private val statusChecker: StatusChecker
+    private val statusChecker: StatusChecker,
+    private var settings: AndroidLocationSettings
 ) : LocationStrategy {
-    companion object {
-        @JvmStatic
-        private fun buildLocationRequest(): LocationRequest =
-            LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000L)
-                .setWaitForAccurateLocation(true)
-                .setMinUpdateDistanceMeters(1F)
-                .setMinUpdateIntervalMillis(1000L)
-                .build()
+    private var locationCallback: FusedLocationStreamCallback? = null
+
+    override fun setSettings(settings: AndroidLocationSettings) {
+        this.settings = settings
     }
 
-    private var locationCallback: FusedLocationStreamCallback? = null
+    private fun buildLocationRequest(): LocationRequest =
+        LocationRequest.Builder(settings.priority.level, settings.intervalMs)
+            .setGranularity(settings.granularity)
+            .setWaitForAccurateLocation(settings.waitForAccurateLocation)
+            .setMinUpdateDistanceMeters(settings.minUpdateDistanceMeters)
+            .setMinUpdateIntervalMillis(settings.minUpdateIntervalMs)
+            .setMaxUpdateDelayMillis(settings.maxUpdateDelayMs)
+            .setMaxUpdateAgeMillis(settings.maxUpdateAgeMillis)
+            .setMaxUpdates(settings.maxUpdates)
+            .build()
 
     @RequiresPermission(anyOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     override fun getCurrent(result: ResultChannel) {

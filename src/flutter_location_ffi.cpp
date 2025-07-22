@@ -35,6 +35,16 @@ JNI_OnUnload(JavaVM *, void *) {
     g_javaVm = nullptr;
 }
 
+FFI_PLUGIN_EXPORT void flutter_location_ffi_set_settings(ResultNative *args) {
+    JNIEnvAttachGuard jniEnvAttachGuard(g_javaVm);
+    JNIEnv *env = jniEnvAttachGuard;
+    JNILocalRefGuard localRefGuard(env, env->NewByteArray(args->size));
+    auto byteArray = reinterpret_cast<jbyteArray>(localRefGuard.get());
+    env->SetByteArrayRegion(byteArray, 0, args->size, reinterpret_cast<const jbyte *>(args->data));
+    jmethodID jmethodID1 = env->GetStaticMethodID(g_plugin, "setSettings", "([B)V");
+    env->CallStaticVoidMethod(g_plugin, jmethodID1, byteArray);
+}
+
 FFI_PLUGIN_EXPORT void flutter_location_ffi_check_and_request_permission(Callback callback) {
     JNIEnvAttachGuard jniEnvAttachGuard(g_javaVm);
     JNIEnv *env = jniEnvAttachGuard;

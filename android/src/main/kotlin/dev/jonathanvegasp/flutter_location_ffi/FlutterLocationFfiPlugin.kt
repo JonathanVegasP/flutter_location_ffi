@@ -1,6 +1,5 @@
 package dev.jonathanvegasp.flutter_location_ffi
 
-import android.content.Context
 import androidx.annotation.Keep
 import dev.jonathanvegasp.result_channel.ResultChannel
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -19,6 +18,17 @@ class FlutterLocationFfiPlugin : FlutterPlugin, ActivityAware {
 
         private var permissionManager: PermissionManager? = null
         private var locationStrategy: LocationStrategy? = null
+
+        @JvmStatic
+        @Keep
+        fun setSettings(byteArray: ByteArray) {
+            val data = ResultChannel.serializer.deserialize(byteArray)
+            locationStrategy!!.setSettings(
+                AndroidLocationSettings.create(
+                    data as List<Any?>
+                )
+            )
+        }
 
         @JvmStatic
         @Keep
@@ -62,19 +72,16 @@ class FlutterLocationFfiPlugin : FlutterPlugin, ActivityAware {
     }
 
     private var activityPluginBinding: ActivityPluginBinding? = null
-    private var context: Context? = null
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        context = flutterPluginBinding.applicationContext
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        context = null
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         val activity = binding.activity
-        val manager = LocationPermissionManager(activity, context!!)
+        val manager = LocationPermissionManager(activity)
         binding.addRequestPermissionsResultListener(manager)
 
         activityPluginBinding = binding
