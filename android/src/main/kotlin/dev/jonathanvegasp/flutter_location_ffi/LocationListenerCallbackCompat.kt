@@ -17,7 +17,7 @@ class LocationListenerCallbackCompat(
     override fun onLocationChanged(location: Location) {
         val accuracy = if (location.hasAccuracy()) location.accuracy else 0.0F
 
-        if (accuracy > 50.0F) return
+        if (accuracy > settings.accuracyFilter) return
 
         LocationManagerCompat.removeUpdates(locationManager, this)
 
