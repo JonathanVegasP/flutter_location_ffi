@@ -12,8 +12,15 @@ final class LocationPermissionManager: NSObject, PermissionManager {
     }
 
     func checkAndRequestPermission(resultChannel: ResultChannel) {
-        self.resultChannel = resultChannel
-        locationManager.requestAlwaysAuthorization()
+        let permission = checkPermission()
+        
+        if permission == .denied {
+            self.resultChannel = resultChannel
+            locationManager.requestAlwaysAuthorization()
+            return
+        }
+        
+        resultChannel.success(permission.rawValue)
     }
 
     func checkPermission() -> LocationPermission {

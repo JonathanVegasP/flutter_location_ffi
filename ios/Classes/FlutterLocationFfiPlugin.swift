@@ -50,6 +50,7 @@ public func setSettings(result: UnsafeMutablePointer<ResultNative>?) {
     )
     let settings = iOSLocationSettings.custom(data: data as! [Any?])
     FlutterLocationFfiPlugin.locationManager!.setSettings(settings: settings)
+    FlutterLocationFfiPlugin.locationStreamManager!.setSettings(settings: settings)
 }
 
 @_cdecl("flutter_location_ffi_check_and_request_permission")

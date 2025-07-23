@@ -89,12 +89,12 @@ void main() {
             /// they override the corresponding values in `distanceFilter`, `priority`, and `intervalMs`.
             appleLocationSettings: AppleLocationSettings(
               accuracyFilter: 200.0,
-              distanceFilter: -1,
+              distanceFilter: 1,
               priority: LocationPriority.medium,
               intervalMs: 10000,
               activityType: ActivityType.other,
               allowsBackgroundLocationUpdates: false,
-              headingFilter: -1,
+              headingFilter: 0,
               pausesLocationUpdatesAutomatically: true,
               showBackgroundLocationIndicator: true,
             )
@@ -198,9 +198,9 @@ The `example/` directory contains a sample Flutter app demonstrating how to use 
 - **Cross-Platform**: Consistent behavior across iOS (using `CoreLocation`) and Android.
 
 ### TODO
-- [ ] Add support for configuring location settings (e.g., accuracy, update interval).
+- [x] Add support for configuring location settings (e.g., accuracy, update interval).
   - [x] Android
-  - [ ] iOS
+  - [x] iOS
 - [ ] Implement background location tracking with appropriate platform configurations.
   - [ ] Android
   - [ ] iOS
