@@ -3,6 +3,8 @@
 
 #import <result_channel/result_channel.h>
 
+FFI_PLUGIN_EXPORT void flutter_location_ffi_set_settings(ResultNative * result);
+
 FFI_PLUGIN_EXPORT void flutter_location_ffi_check_and_request_permission(Callback callback);
 
 FFI_PLUGIN_EXPORT ResultNative *flutter_location_ffi_check_permission(void);

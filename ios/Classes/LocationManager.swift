@@ -1,10 +1,6 @@
 import Foundation
 import result_channel
 
-protocol LocationManager : Disposable {
+protocol LocationManager: LocationSettingsConfigurable {
     func getCurrent(resultChannel: ResultChannel)
-    
-    func startUpdates(resultChannel: ResultChannel)
-    
-    func stopUpdates()
 }

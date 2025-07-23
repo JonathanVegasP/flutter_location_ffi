@@ -2,18 +2,16 @@ import CoreLocation
 import Foundation
 import result_channel
 
-final class CoreLocationManager: NSObject, LocationManager {
-    private let locationManager: CLLocationManager
+final class CoreLocationStreamManager: NSObject, LocationStreamManager {
+    private let locationManager: CLLocationManager = CLLocationManager()
     var settings: iOSLocationSettings
-    var channel: ResultChannel?
-    var delegate: LocationPermissionDelegate?
+    var channelStream: ResultChannel?
 
-    init(locationManager: CLLocationManager, settings: iOSLocationSettings) {
-        self.locationManager = locationManager
+    init(settings: iOSLocationSettings) {
         self.settings = settings
 
         super.init()
-
+        
         locationManager.delegate = self
 
         initSettings()
@@ -34,18 +32,34 @@ final class CoreLocationManager: NSObject, LocationManager {
         locationManager.headingFilter = settings.headingFilter
     }
 
-    func getCurrent(resultChannel: ResultChannel) {
+    func startUpdates(resultChannel: ResultChannel) {
+        if channelStream != nil {
+            resultChannel.failure(ErrorMessages.startUpdatesFailed)
+            return
+        }
+
         DispatchQueue.global(qos: .userInitiated).async {
-            guard CLLocationManager.locationServicesEnabled() else {
+            if !CLLocationManager.locationServicesEnabled() {
                 resultChannel.success(LocationDataFactory.create())
-                return
             }
 
             DispatchQueue.main.async {
-                self.channel = resultChannel
+                self.channelStream = resultChannel
                 self.locationManager.startUpdatingLocation()
             }
         }
+    }
+
+    func stopUpdates() {
+        guard let channel = channelStream else {
+            return
+        }
+        
+        self.locationManager.stopUpdatingLocation()
+
+        channelStream = nil
+
+        channel.failure(nil)
     }
 
     func setSettings(settings: iOSLocationSettings) {
@@ -55,8 +69,6 @@ final class CoreLocationManager: NSObject, LocationManager {
     }
 
     func dispose() {
-        channel?.failure(nil)
-        channel = nil
-        delegate = nil
+        stopUpdates()
     }
 }

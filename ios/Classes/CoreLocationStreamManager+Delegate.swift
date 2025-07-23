@@ -1,11 +1,7 @@
 import CoreLocation
 import Foundation
 
-extension CoreLocationManager: CLLocationManagerDelegate {
-    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        delegate!.didChangeLocationPermission(manager.authorizationStatus)
-    }
-
+extension CoreLocationStreamManager: CLLocationManagerDelegate {
     func locationManager(
         _ manager: CLLocationManager,
         didUpdateLocations locations: [CLLocation]
@@ -32,13 +28,16 @@ extension CoreLocationManager: CLLocationManagerDelegate {
             longitude: location.coordinate.longitude,
             accuracy: accuracy
         )
-
-        let channel = channel
         
-        self.channel = nil
+        channelStream!.success(result)
+    }
 
-        channel!.success(result)
-
-        manager.stopUpdatingLocation()
+    func locationManager(
+        _ manager: CLLocationManager,
+        didFailWithError error: any Error
+    ) {
+        if let error = error as? CLError, error.code == .denied {
+            channelStream?.success(LocationDataFactory.create())
+        }
     }
 }

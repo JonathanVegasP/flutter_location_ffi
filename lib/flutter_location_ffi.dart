@@ -33,7 +33,7 @@ final class AndroidLocationSettings {
   final LocationPriority? priority;
 
   /// Defaults to 10000 (10 seconds)
-  final int? intervalMs;
+  final int intervalMs;
 
   /// Defaults to 200.0
   final double? accuracyFilter;
@@ -64,7 +64,7 @@ final class AndroidLocationSettings {
 
   const AndroidLocationSettings({
     this.priority,
-    this.intervalMs,
+    this.intervalMs = 10000,
     this.accuracyFilter,
     this.granularity = AndroidGranularity.permissionLevel,
     this.waitForAccurateLocation = true,
@@ -87,7 +87,6 @@ enum ActivityType {
 
 final class AppleLocationSettings {
   final LocationPriority? priority;
-  final int? intervalMs;
   final double? distanceFilter;
   final double? accuracyFilter;
   final ActivityType activityType;
@@ -98,29 +97,26 @@ final class AppleLocationSettings {
 
   const AppleLocationSettings({
     this.priority,
-    this.intervalMs,
     this.distanceFilter,
     this.accuracyFilter,
     this.activityType = ActivityType.other,
     this.pausesLocationUpdatesAutomatically = true,
     this.allowsBackgroundLocationUpdates = false,
     this.showBackgroundLocationIndicator = true,
-    this.headingFilter = -1,
+    this.headingFilter = 0,
   });
 }
 
 final class LocationSettings {
   final LocationPriority priority;
-  final int intervalMs;
-  final double? distanceFilter;
+  final double distanceFilter;
   final double accuracyFilter;
   final AndroidLocationSettings? androidLocationSettings;
   final AppleLocationSettings? appleLocationSettings;
 
   const LocationSettings({
     this.priority = LocationPriority.medium,
-    this.intervalMs = 10000,
-    this.distanceFilter,
+    this.distanceFilter = 0,
     this.accuracyFilter = 200.0,
     this.androidLocationSettings,
     this.appleLocationSettings,
@@ -133,20 +129,19 @@ final class LocationSettings {
             androidLocationSettings ??
             AndroidLocationSettings(
               priority: priority,
-              intervalMs: intervalMs,
-              minUpdateDistanceMeters: distanceFilter ?? 0,
-              minUpdateIntervalMs: intervalMs,
+              minUpdateDistanceMeters: distanceFilter,
+              accuracyFilter: accuracyFilter,
             );
 
         return [
           (android.priority ?? priority).index,
-          android.intervalMs ?? intervalMs,
+          android.intervalMs,
           android.accuracyFilter ?? accuracyFilter,
           android.granularity.index,
           android.waitForAccurateLocation,
           android.durationMs,
-          android.minUpdateDistanceMeters ?? distanceFilter ?? 0,
-          android.minUpdateIntervalMs ?? intervalMs,
+          android.minUpdateDistanceMeters ?? distanceFilter,
+          android.minUpdateIntervalMs ?? android.intervalMs,
           android.maxUpdateDelayMs,
           android.maxUpdateAgeMillis,
           android.maxUpdates,
@@ -156,14 +151,12 @@ final class LocationSettings {
             appleLocationSettings ??
             AppleLocationSettings(
               priority: priority,
-              intervalMs: intervalMs,
-              distanceFilter: distanceFilter ?? -1,
+              distanceFilter: distanceFilter,
               accuracyFilter: accuracyFilter,
             );
         return [
           (ios.priority ?? priority).index,
-          ios.intervalMs ?? intervalMs,
-          ios.distanceFilter ?? distanceFilter ?? -1,
+          ios.distanceFilter ?? distanceFilter,
           ios.accuracyFilter ?? accuracyFilter,
           ios.activityType.index,
           ios.pausesLocationUpdatesAutomatically,

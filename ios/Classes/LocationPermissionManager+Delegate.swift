@@ -1,14 +1,14 @@
-import Foundation
 import CoreLocation
+import Foundation
 
-extension LocationPermissionManager : LocationPermissionDelegate {
+extension LocationPermissionManager: LocationPermissionDelegate {
     func didChangeLocationPermission(_ permission: CLAuthorizationStatus) {
         guard let channel = resultChannel else {
             return
         }
-        
+
         resultChannel = nil
-        
+
         switch permission {
         case .authorizedWhenInUse, .authorizedAlways:
             channel.success(LocationPermission.granted.rawValue)

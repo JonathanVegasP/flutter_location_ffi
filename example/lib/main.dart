@@ -36,7 +36,6 @@ class _MyAppState extends State<MyApp> {
   void _onInit() async {
     FlutterLocation.setSettings(
       const LocationSettings(
-        intervalMs: 10000,
         priority: LocationPriority.medium,
         distanceFilter: 0,
         accuracyFilter: 200.0,
@@ -59,12 +58,11 @@ class _MyAppState extends State<MyApp> {
           /// they override the corresponding values in `distanceFilter`, `priority`, and `intervalMs`.
         appleLocationSettings: AppleLocationSettings(
           accuracyFilter: 200.0,
-          distanceFilter: -1,
+          distanceFilter: 1,
           priority: LocationPriority.medium,
-          intervalMs: 10000,
           activityType: ActivityType.other,
           allowsBackgroundLocationUpdates: false,
-          headingFilter: -1,
+          headingFilter: 0,
           pausesLocationUpdatesAutomatically: true,
           showBackgroundLocationIndicator: true,
         )
