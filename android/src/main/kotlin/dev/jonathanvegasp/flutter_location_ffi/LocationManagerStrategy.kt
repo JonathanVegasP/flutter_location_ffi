@@ -68,7 +68,7 @@ class LocationManagerStrategy(
             result.success(LocationDataFactory.create())
         }
 
-        val listener = LocationListenerStreamCompat(settings, result, locationManager)
+        val listener = LocationListenerStreamCompat(settings, result, locationManager, nmeaManager)
 
         locationListenerStreamCompat = listener
 
