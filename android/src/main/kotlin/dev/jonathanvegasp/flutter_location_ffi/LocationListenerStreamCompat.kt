@@ -11,23 +11,22 @@ import dev.jonathanvegasp.result_channel.ResultChannel
 class LocationListenerStreamCompat(
     private var settings: AndroidLocationSettings,
     private val channel: ResultChannel,
-    private val locationManager: LocationManager
+    private val locationManager: LocationManager,
+    private val nmeaManager: NmeaManager
 ) : LocationListenerCompat, Destroyable {
     fun setSettings(settings: AndroidLocationSettings) {
         this.settings = settings
     }
 
     override fun onLocationChanged(location: Location) {
-        val accuracy = if (location.hasAccuracy()) location.accuracy else 0.0F
+        val accuracy = settings.validate(location) ?: return
 
-        if (accuracy > settings.accuracyFilter) return
+        nmeaManager.setAltitudeMsl(location)
 
         channel.success(
             LocationDataFactory.create(
-                true,
-                location.latitude,
-                location.longitude,
-                accuracy
+                accuracy,
+                location
             )
         )
     }

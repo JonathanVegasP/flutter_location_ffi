@@ -8,7 +8,6 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 
 /** FlutterLocationFfiPlugin */
 class FlutterLocationFfiPlugin : FlutterPlugin, ActivityAware {
-
     companion object {
         private const val NAME = "flutter_location_ffi"
 

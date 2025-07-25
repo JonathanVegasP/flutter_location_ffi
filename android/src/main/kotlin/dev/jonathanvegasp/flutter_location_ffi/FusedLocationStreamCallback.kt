@@ -10,7 +10,8 @@ class FusedLocationStreamCallback(
     private var settings: AndroidLocationSettings,
     private val channel: ResultChannel,
     private val statusChecker: StatusChecker,
-    private val locationProviderClient: FusedLocationProviderClient
+    private val locationProviderClient: FusedLocationProviderClient,
+    private val nmeaManager: NmeaManager
 ) : LocationCallback(), Destroyable {
 
     fun setSettings(settings: AndroidLocationSettings) {
@@ -20,16 +21,14 @@ class FusedLocationStreamCallback(
     override fun onLocationResult(p0: LocationResult) {
         val location = p0.lastLocation ?: return
 
-        val accuracy = if (location.hasAccuracy()) location.accuracy else 0.0F
+        val accuracy = settings.validate(location) ?: return
 
-        if (accuracy > settings.accuracyFilter) return
+        nmeaManager.setAltitudeMsl(location)
 
         channel.success(
             LocationDataFactory.create(
-                true,
-                location.latitude,
-                location.longitude,
-                accuracy
+                accuracy,
+                location
             )
         )
     }
@@ -42,6 +41,7 @@ class FusedLocationStreamCallback(
 
     override fun onDestroy() {
         locationProviderClient.removeLocationUpdates(this)
+
         channel.failure(null)
     }
 }

@@ -10,6 +10,7 @@ import dev.jonathanvegasp.result_channel.ResultChannel
 class FusedLocationStrategy(
     private val locationProviderClient: FusedLocationProviderClient,
     private val statusChecker: StatusChecker,
+    private val nmeaManager: NmeaManager,
     private var settings: AndroidLocationSettings
 ) : LocationStrategy {
     private var locationCallback: FusedLocationStreamCallback? = null
@@ -42,18 +43,30 @@ class FusedLocationStrategy(
 
         val locationProviderClient = locationProviderClient
 
+        val callback =
+            FusedLocationCallback(
+                settings,
+                result,
+                statusChecker,
+                locationProviderClient,
+                nmeaManager
+            )
+
+        nmeaManager.getCurrent(callback)
+
         locationProviderClient.requestLocationUpdates(
             buildLocationRequest(),
-            FusedLocationCallback(settings, result, statusChecker, locationProviderClient),
+            callback,
             Looper.myLooper()
         )
     }
 
     @RequiresPermission(anyOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     override fun startUpdates(result: ResultChannel) {
-        if (locationCallback != null) {
-            result.failure(LocationStrategy.ON_START_ERROR)
-            return
+        nmeaManager.startUpdates()
+
+        locationCallback?.also {
+            it.onDestroy()
         }
 
         val statusChecker = statusChecker
@@ -64,20 +77,29 @@ class FusedLocationStrategy(
 
         val locationProviderClient = locationProviderClient
         val callback =
-            FusedLocationStreamCallback(settings, result, statusChecker, locationProviderClient)
+            FusedLocationStreamCallback(
+                settings,
+                result,
+                statusChecker,
+                locationProviderClient,
+                nmeaManager
+            )
+
+        locationCallback = callback
 
         locationProviderClient.requestLocationUpdates(
             buildLocationRequest(),
             callback,
             Looper.myLooper()
         )
-
-        locationCallback = callback
     }
 
     override fun stopUpdates() {
-        locationCallback?.onDestroy()
-        locationCallback = null
+        nmeaManager.stopUpdates()
+        locationCallback?.also {
+            it.onDestroy()
+            locationCallback = null
+        }
     }
 
     override fun onDestroy() {

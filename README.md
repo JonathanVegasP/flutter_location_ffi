@@ -205,14 +205,24 @@ The `example/` directory contains a sample Flutter app demonstrating how to use 
   - [ ] Android
   - [ ] iOS
 - [ ] Update `LocationData` class to include additional fields:
-  - [ ] `timestamp` (required)
-  - [ ] `altitude` (required)
-  - [ ] `altitudeAccuracy` (required)
-  - [ ] `heading` (required)
-  - [ ] `headingAccuracy` (required)
-  - [ ] `speed` (required)
-  - [ ] `speedAccuracy` (required)
-  - [ ] `floor` (optional)
+  - [x] Android
+    - [x] `timestamp` (required)
+    - [x] `altitude` (required)
+    - [x] `altitudeAccuracy` (required)
+    - [x] `heading` (required)
+    - [x] `headingAccuracy` (required)
+    - [x] `speed` (required)
+    - [x] `speedAccuracy` (required)
+    - [x] `floor` (optional)
+  - [ ] iOS
+    - [ ] `timestamp` (required)
+    - [ ] `altitude` (required)
+    - [ ] `altitudeAccuracy` (required)
+    - [ ] `heading` (required)
+    - [ ] `headingAccuracy` (required)
+    - [ ] `speed` (required)
+    - [ ] `speedAccuracy` (required)
+    - [ ] `floor` (optional)
 - [ ] Create unit and integration tests to validate plugin functionality.
   - [ ] Android
   - [ ] iOS

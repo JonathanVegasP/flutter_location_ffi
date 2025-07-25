@@ -39,23 +39,25 @@ class _MyAppState extends State<MyApp> {
         priority: LocationPriority.medium,
         distanceFilter: 0,
         accuracyFilter: 200.0,
+
         /// When `minUpdateDistanceMeters`, `priority`, `accuracyFilter`, or `intervalMs` are set,
         /// they override the corresponding values in `distanceFilter`, `priority`, and `intervalMs`.
         androidLocationSettings: AndroidLocationSettings(
-          priority: LocationPriority.medium,
-          accuracyFilter: 200.0,
+          priority: LocationPriority.best,
+          accuracyFilter: 50.0,
           waitForAccurateLocation: true,
-          maxUpdates: -1,
-          durationMs: -1,
-          minUpdateIntervalMs: 10000,
+          maxUpdates: 0,
+          durationMs: 0,
+          minUpdateIntervalMs: 1000,
           maxUpdateDelayMs: 0,
-          intervalMs: 10000,
+          intervalMs: 1000,
           minUpdateDistanceMeters: 0,
           granularity: AndroidGranularity.permissionLevel,
-          maxUpdateAgeMillis: 10000,
+          maxUpdateAgeMillis: 1000,
         ),
-          /// When `distanceFilter`, `priority`, `accuracyFilter`, or `intervalMs` are set,
-          /// they override the corresponding values in `distanceFilter`, `priority`, and `intervalMs`.
+
+        /// When `distanceFilter`, `priority`, `accuracyFilter`, or `intervalMs` are set,
+        /// they override the corresponding values in `distanceFilter`, `priority`, and `intervalMs`.
         appleLocationSettings: AppleLocationSettings(
           accuracyFilter: 200.0,
           distanceFilter: 1,
@@ -65,7 +67,7 @@ class _MyAppState extends State<MyApp> {
           headingFilter: 0,
           pausesLocationUpdatesAutomatically: true,
           showBackgroundLocationIndicator: true,
-        )
+        ),
       ),
     );
 
@@ -82,9 +84,9 @@ class _MyAppState extends State<MyApp> {
     _subscription = FlutterLocation.onChanged.listen(_onLocationChange);
   }
 
-  void _onLocationChange(data) {
+  void _onLocationChange(LocationData data) {
     _currentLocationData =
-        'Latitude: ${data.latitude}\nLongitude: ${data.longitude}\nAccuracy: ${data.accuracy}';
+        'Latitude: ${data.latitude}\nLongitude: ${data.longitude}\nAccuracy: ${data.accuracy}\nTimestamp: ${data.timestamps.toIso8601String()}\nAltitudeEllipsoid: ${data.altitudeEllipsoid}\nAltitudeMSL: ${data.altitudeMSL}\nAltitudeAccuracy: ${data.altitudeAccuracy}\nHeading: ${data.heading}\nHeadingAccuracy: ${data.headingAccuracy}\nSpeed: ${data.speed}\nSpeed Accuracy: ${data.speedAccuracy}\nFloor: ${data.floor}';
     setState();
   }
 
@@ -120,20 +122,18 @@ class _MyAppState extends State<MyApp> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text("Current Permission: ${FlutterLocation.checkPermission()}"),
-            Text("Current LocationData: $_currentLocationData"),
-            TextButton(
-              onPressed: _onInit,
-              child: const Text('Tente Novamente'),
-            ),
-            TextButton(onPressed: _pause, child: const Text("Pausar")),
-            TextButton(onPressed: _resume, child: const Text("Resumir")),
+            if (_currentLocationData.isNotEmpty)
+              Text("Current LocationData\n$_currentLocationData"),
+            TextButton(onPressed: _onInit, child: const Text('Try again')),
+            TextButton(onPressed: _pause, child: const Text("Pause")),
+            TextButton(onPressed: _resume, child: const Text("Resume")),
             const TextButton(
               onPressed: FlutterLocation.openAppSettings,
-              child: Text('Abrir configurações'),
+              child: Text('Open application settings'),
             ),
             const TextButton(
               onPressed: FlutterLocation.openLocationSettings,
-              child: Text("Abrir configurações de localização"),
+              child: Text("Open location settings"),
             ),
           ],
         ),

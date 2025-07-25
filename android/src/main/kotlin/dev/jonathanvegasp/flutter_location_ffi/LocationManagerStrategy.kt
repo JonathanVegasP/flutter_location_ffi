@@ -10,6 +10,7 @@ import dev.jonathanvegasp.result_channel.ResultChannel
 
 class LocationManagerStrategy(
     private val locationManager: LocationManager,
+    private val nmeaManager: NmeaManager,
     private var settings: AndroidLocationSettings
 ) : LocationStrategy {
     private var locationListenerStreamCompat: LocationListenerStreamCompat? = null
@@ -39,24 +40,10 @@ class LocationManagerStrategy(
             return
         }
 
-        LocationManagerCompat.requestLocationUpdates(
-            locationManager,
-            LocationManager.GPS_PROVIDER,
-            buildLocationRequest(),
-            LocationListenerCallbackCompat(settings, result, locationManager),
-            Looper.myLooper()!!
-        )
-    }
+        val listener =
+            LocationListenerCallbackCompat(settings, result, locationManager, nmeaManager)
 
-    @RequiresPermission(anyOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
-    override fun startUpdates(result: ResultChannel) {
-        val locationManager = locationManager
-
-        if (!LocationManagerCompat.isLocationEnabled(locationManager)) {
-            result.success(LocationDataFactory.create())
-        }
-
-        val listener = LocationListenerStreamCompat(settings, result, locationManager)
+        nmeaManager.getCurrent(listener)
 
         LocationManagerCompat.requestLocationUpdates(
             locationManager,
@@ -65,15 +52,42 @@ class LocationManagerStrategy(
             listener,
             Looper.myLooper()!!
         )
+    }
+
+    @RequiresPermission(anyOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
+    override fun startUpdates(result: ResultChannel) {
+        nmeaManager.startUpdates()
+
+        locationListenerStreamCompat?.also {
+            it.onDestroy()
+        }
+
+        val locationManager = locationManager
+
+        if (!LocationManagerCompat.isLocationEnabled(locationManager)) {
+            result.success(LocationDataFactory.create())
+        }
+
+        val listener = LocationListenerStreamCompat(settings, result, locationManager)
 
         locationListenerStreamCompat = listener
+
+        LocationManagerCompat.requestLocationUpdates(
+            locationManager,
+            LocationManager.GPS_PROVIDER,
+            buildLocationRequest(),
+            listener,
+            Looper.myLooper()!!
+        )
     }
 
     @RequiresPermission(anyOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     override fun stopUpdates() {
-        locationListenerStreamCompat?.onDestroy()
-
-        locationListenerStreamCompat = null
+        nmeaManager.stopUpdates()
+        locationListenerStreamCompat?.also {
+            it.onDestroy()
+            locationListenerStreamCompat = null
+        }
     }
 
     @RequiresPermission(anyOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])

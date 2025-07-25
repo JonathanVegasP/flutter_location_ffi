@@ -1,5 +1,6 @@
 package dev.jonathanvegasp.flutter_location_ffi
 
+import android.location.Location
 import com.google.android.gms.location.Granularity
 import dev.jonathanvegasp.result_channel.toLong
 
@@ -16,6 +17,16 @@ class AndroidLocationSettings private constructor(
     val maxUpdateAgeMillis: Long,
     val maxUpdates: Int,
 ) {
+
+    fun validate(location: Location): Float? {
+        if (!location.hasAccuracy()) return 0.0F
+        val accuracy = location.accuracy
+        return when {
+            accuracy > accuracyFilter -> null
+            else -> accuracy
+        }
+    }
+
     companion object {
         fun default(priority: AndroidLocationPriorityStrategy): AndroidLocationSettings {
             val intervalMs = 10000L
@@ -54,10 +65,14 @@ class AndroidLocationSettings private constructor(
         fun create(
             data: List<Any?>
         ): AndroidLocationSettings {
-            val priority = if (LocationStrategyFactory.isGooglePlayAvailable) {
-                AndroidLocationPriority.entries[data[0] as Int]
-            } else {
-                AndroidLegacyLocationPriority.entries[data[0] as Int]
+            val priority = when {
+                LocationStrategyFactory.isGooglePlayAvailable -> {
+                    AndroidLocationPriority.entries[data[0] as Int]
+                }
+
+                else -> {
+                    AndroidLegacyLocationPriority.entries[data[0] as Int]
+                }
             }
 
             val intervalMs = data[1].toLong()
@@ -70,7 +85,10 @@ class AndroidLocationSettings private constructor(
 
             var durationMs = data[5].toLong()
 
-            durationMs = if (durationMs == -1L) Long.MAX_VALUE else durationMs
+            durationMs = when {
+                durationMs > 0 -> durationMs
+                else -> Long.MAX_VALUE
+            }
 
             val minUpdateDistanceMeters = (data[6] as Double).toFloat()
 
@@ -80,7 +98,12 @@ class AndroidLocationSettings private constructor(
 
             val maxUpdateAgeMillis = data[9].toLong()
 
-            val maxUpdates = data[10] as Int
+            var maxUpdates = data[10] as Int
+
+            maxUpdates = when {
+                maxUpdates > 0 -> maxUpdates
+                else -> Int.MAX_VALUE
+            }
 
             return AndroidLocationSettings(
                 priority,
@@ -93,7 +116,7 @@ class AndroidLocationSettings private constructor(
                 minUpdateIntervalMs,
                 maxUpdateDelayMs,
                 maxUpdateAgeMillis,
-                if (maxUpdates == -1) Int.MAX_VALUE else maxUpdates
+                maxUpdates
             )
         }
     }

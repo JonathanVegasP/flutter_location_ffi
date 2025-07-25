@@ -55,10 +55,13 @@ class LocationPermissionManager(private val activity: Activity) :
             Manifest.permission.ACCESS_FINE_LOCATION
         )
 
-        return if (canAskFine) {
-            LocationPermission.DENIED
-        } else {
-            LocationPermission.NEVER_ASK_AGAIN
+        return when {
+            canAskFine -> {
+                LocationPermission.DENIED
+            }
+            else -> {
+                LocationPermission.NEVER_ASK_AGAIN
+            }
         }
     }
 
@@ -108,10 +111,13 @@ class LocationPermissionManager(private val activity: Activity) :
 
             if (result != PackageManager.PERMISSION_GRANTED) {
                 val granted =
-                    if (ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
-                        LocationPermission.DENIED
-                    } else {
-                        LocationPermission.NEVER_ASK_AGAIN
+                    when {
+                        ActivityCompat.shouldShowRequestPermissionRationale(activity, permission) -> {
+                            LocationPermission.DENIED
+                        }
+                        else -> {
+                            LocationPermission.NEVER_ASK_AGAIN
+                        }
                     }
 
                 channel.success(granted.ordinal)
@@ -126,7 +132,9 @@ class LocationPermissionManager(private val activity: Activity) :
     }
 
     override fun onDestroy() {
-        channel?.failure(null)
-        channel = null
+        channel?.also {
+            it.failure(null)
+            channel = null
+        }
     }
 }
