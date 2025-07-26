@@ -2,10 +2,6 @@ import CoreLocation
 import Foundation
 
 extension CoreLocationManager: CLLocationManagerDelegate {
-    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        delegate!.didChangeLocationPermission(manager.authorizationStatus)
-    }
-
     func locationManager(
         _ manager: CLLocationManager,
         didUpdateLocations locations: [CLLocation]
@@ -16,29 +12,45 @@ extension CoreLocationManager: CLLocationManagerDelegate {
 
         let timestamp: TimeInterval = location.timestamp.timeIntervalSinceNow
 
-        if timestamp > LocationDataConstants.locationMaxIntervalSinceNow {
+        guard timestamp <= LocationDataConstants.locationMaxIntervalSinceNow
+        else {
             return
         }
 
-        let accuracy = location.horizontalAccuracy
-
-        if accuracy > settings.accuracyFilter {
+        guard let accuracy = settings.validate(location: location) else {
             return
         }
 
         let result = LocationDataFactory.create(
-            gpsEnabled: true,
-            latitude: location.coordinate.latitude,
-            longitude: location.coordinate.longitude,
-            accuracy: accuracy
+            accuracy: accuracy,
+            location: location
         )
-
-        let channel = channel
-        
-        self.channel = nil
 
         channel!.success(result)
 
+        channel = nil
+
         manager.stopUpdatingLocation()
+
+        delegate!.objectWillRelease(at: memoryIndex)
+        delegate = nil
+    }
+
+    func locationManager(
+        _ manager: CLLocationManager,
+        didFailWithError error: any Error
+    ) {
+        let channel = channel
+        self.channel = nil
+        delegate!.objectWillRelease(at: memoryIndex)
+        delegate = nil
+
+        guard let error = error as? CLError, error.code == .denied else {
+            channel!.failure(error.localizedDescription)
+
+            return
+        }
+
+        channel!.failure(error.localizedDescription)
     }
 }

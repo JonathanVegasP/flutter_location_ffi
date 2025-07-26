@@ -2,6 +2,10 @@ import CoreLocation
 import Foundation
 
 extension CoreLocationStreamManager: CLLocationManagerDelegate {
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        delegate!.didChangeLocationPermission(manager.authorizationStatus)
+    }
+
     func locationManager(
         _ manager: CLLocationManager,
         didUpdateLocations locations: [CLLocation]
@@ -10,25 +14,15 @@ extension CoreLocationStreamManager: CLLocationManagerDelegate {
             return
         }
 
-        let timestamp: TimeInterval = location.timestamp.timeIntervalSinceNow
-
-        if timestamp > LocationDataConstants.locationMaxIntervalSinceNow {
-            return
-        }
-
-        let accuracy = location.horizontalAccuracy
-
-        if accuracy > settings.accuracyFilter {
+        guard let accuracy = settings.validate(location: location) else {
             return
         }
 
         let result = LocationDataFactory.create(
-            gpsEnabled: true,
-            latitude: location.coordinate.latitude,
-            longitude: location.coordinate.longitude,
-            accuracy: accuracy
+            accuracy: accuracy,
+            location: location
         )
-        
+
         channelStream!.success(result)
     }
 
@@ -36,8 +30,11 @@ extension CoreLocationStreamManager: CLLocationManagerDelegate {
         _ manager: CLLocationManager,
         didFailWithError error: any Error
     ) {
-        if let error = error as? CLError, error.code == .denied {
-            channelStream?.success(LocationDataFactory.create())
+        guard let error = error as? CLError, error.code == .denied else {
+            channelStream!.failure(error.localizedDescription)
+            return
         }
+
+        channelStream!.success(LocationDataFactory.create())
     }
 }

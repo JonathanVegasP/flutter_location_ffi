@@ -4,7 +4,7 @@ import Foundation
 final class iOSLocationSettings {
     let priority: CLLocationAccuracy
     let distanceFilter: CLLocationDistance
-    let accuracyFilter: Double
+    private let accuracyFilter: CLLocationAccuracy
     let activityType: CLActivityType
     let pausesLocationUpdatesAutomatically: Bool
     let allowsBackgroundLocationUpdates: Bool
@@ -78,7 +78,7 @@ final class iOSLocationSettings {
         }
 
         let distanceFilter = data[1] as! CLLocationDistance
-        let accuracyFilter = data[2] as! Double
+        let accuracyFilter = data[2] as! CLLocationAccuracy
         let activityType: CLActivityType
 
         switch data[3] as! Int {
@@ -114,5 +114,15 @@ final class iOSLocationSettings {
             headingFilter: headingFilter > 0
                 ? headingFilter : kCLHeadingFilterNone
         )
+    }
+
+    func validate(location: CLLocation) -> CLLocationAccuracy? {
+        let accuracy = location.horizontalAccuracy
+
+        guard accuracy <= accuracyFilter else {
+            return nil
+        }
+
+        return accuracy
     }
 }

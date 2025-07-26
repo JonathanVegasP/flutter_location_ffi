@@ -214,15 +214,15 @@ The `example/` directory contains a sample Flutter app demonstrating how to use 
     - [x] `speed` (required)
     - [x] `speedAccuracy` (required)
     - [x] `floor` (optional)
-  - [ ] iOS
-    - [ ] `timestamp` (required)
-    - [ ] `altitude` (required)
-    - [ ] `altitudeAccuracy` (required)
-    - [ ] `heading` (required)
-    - [ ] `headingAccuracy` (required)
-    - [ ] `speed` (required)
-    - [ ] `speedAccuracy` (required)
-    - [ ] `floor` (optional)
+  - [x] iOS
+    - [x] `timestamp` (required)
+    - [x] `altitude` (required)
+    - [x] `altitudeAccuracy` (required)
+    - [x] `heading` (required)
+    - [x] `headingAccuracy` (required)
+    - [x] `speed` (required)
+    - [x] `speedAccuracy` (required)
+    - [x] `floor` (optional)
 - [ ] Create unit and integration tests to validate plugin functionality.
   - [ ] Android
   - [ ] iOS

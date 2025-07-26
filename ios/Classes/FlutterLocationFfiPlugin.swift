@@ -6,8 +6,9 @@ import result_channel
 
 public final class FlutterLocationFfiPlugin: NSObject, FlutterPlugin {
     static var permissionManager: PermissionManager? = nil
-    static var locationManager: LocationManager? = nil
     static var locationStreamManager: LocationStreamManager? = nil
+    static var currentSettings: iOSLocationSettings? = nil
+    static var lifecycleKeeper: LifecycleKeeper? = nil
 
     public static func register(with registrar: FlutterPluginRegistrar) {
         let manager = CLLocationManager()
@@ -16,17 +17,18 @@ public final class FlutterLocationFfiPlugin: NSObject, FlutterPlugin {
             locationManager: manager
         )
 
+        permissionManager = locationPermissionManager
         let settings = iOSLocationSettings.standard()
+        currentSettings = settings
 
-        let core = CoreLocationManager(
+        let core = CoreLocationStreamManager(
             locationManager: manager,
             settings: settings
         )
 
         core.delegate = locationPermissionManager
-        permissionManager = locationPermissionManager
-        locationManager = core
-        locationStreamManager = CoreLocationStreamManager(settings: settings)
+        locationStreamManager = core
+        lifecycleKeeper = LocationManagerLifecycleKeeper()
         let instance = FlutterLocationFfiPlugin()
 
         registrar.addApplicationDelegate(instance)
@@ -35,22 +37,26 @@ public final class FlutterLocationFfiPlugin: NSObject, FlutterPlugin {
     public func applicationWillTerminate(_ application: UIApplication) {
         Self.locationStreamManager!.dispose()
         Self.locationStreamManager = nil
-        Self.locationManager!.dispose()
-        Self.locationManager = nil
         Self.permissionManager!.dispose()
         Self.permissionManager = nil
+        Self.currentSettings = nil
     }
 }
 
 @_cdecl("flutter_location_ffi_set_settings")
 public func setSettings(result: UnsafeMutablePointer<ResultNative>?) {
     let rawData = result!.pointee
+
     let data = ResultChannel.serializer.deserialize(
         value: Data(bytes: rawData.data, count: Int(rawData.size))
     )
+
     let settings = iOSLocationSettings.custom(data: data as! [Any?])
-    FlutterLocationFfiPlugin.locationManager!.setSettings(settings: settings)
-    FlutterLocationFfiPlugin.locationStreamManager!.setSettings(settings: settings)
+
+    FlutterLocationFfiPlugin.locationStreamManager!
+        .setSettings(settings: settings)
+
+    FlutterLocationFfiPlugin.currentSettings = settings
 }
 
 @_cdecl("flutter_location_ffi_check_and_request_permission")
@@ -64,6 +70,7 @@ public func checkAndRequestPermission(callback: @escaping ResultCallback) {
 @_cdecl("flutter_location_ffi_check_permission")
 public func checkPermission() -> UnsafeMutablePointer<ResultNative>? {
     let value = FlutterLocationFfiPlugin.permissionManager!.checkPermission()
+
     let result = ResultChannel.createResultNative(
         status: ResultChannelStatusOk,
         data: value.rawValue
@@ -74,8 +81,13 @@ public func checkPermission() -> UnsafeMutablePointer<ResultNative>? {
 
 @_cdecl("flutter_location_ffi_get_current")
 public func getCurrent(callback: @escaping ResultCallback) {
-    FlutterLocationFfiPlugin.locationManager!
-        .getCurrent(resultChannel: ResultChannel(resultCallback: callback))
+    let channel = ResultChannel(resultCallback: callback)
+    let settings = FlutterLocationFfiPlugin.currentSettings!
+
+    FlutterLocationFfiPlugin.lifecycleKeeper!.getCurrent(
+        channel: channel,
+        settings: settings
+    )
 }
 
 @_cdecl("flutter_location_ffi_start_updates")

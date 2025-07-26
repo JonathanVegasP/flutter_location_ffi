@@ -13,13 +13,13 @@ final class LocationPermissionManager: NSObject, PermissionManager {
 
     func checkAndRequestPermission(resultChannel: ResultChannel) {
         let permission = checkPermission()
-        
-        if permission == .denied {
+
+        guard permission != .denied else {
             self.resultChannel = resultChannel
             locationManager.requestAlwaysAuthorization()
             return
         }
-        
+
         resultChannel.success(permission.rawValue)
     }
 
@@ -37,35 +37,53 @@ final class LocationPermissionManager: NSObject, PermissionManager {
     }
 
     func openAppSettings() {
-        if #available(iOS 18.3, *) {
-            if let url = URL(
-                string: UIApplication.openDefaultApplicationsSettingsURLString
-            ) {
-                if UIApplication.shared.canOpenURL(url) {
-                    UIApplication.shared.open(
-                        url,
-                        options: [:],
-                        completionHandler: nil
-                    )
-                }
+        guard #available(iOS 18.3, *) else {
+            guard
+                let url = URL(
+                    string: UIApplication.openSettingsURLString
+                )
+            else {
+                return
             }
+
+            guard UIApplication.shared.canOpenURL(url) else {
+                return
+            }
+
+            UIApplication.shared.open(
+                url,
+                options: [:],
+                completionHandler: nil
+            )
 
             return
         }
 
-        if let url = URL(string: UIApplication.openSettingsURLString) {
-            if UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(
-                    url,
-                    options: [:],
-                    completionHandler: nil
-                )
-            }
+        guard
+            let url = URL(
+                string: UIApplication.openDefaultApplicationsSettingsURLString
+            )
+        else {
+            return
         }
+
+        guard UIApplication.shared.canOpenURL(url) else {
+            return
+        }
+
+        UIApplication.shared.open(
+            url,
+            options: [:],
+            completionHandler: nil
+        )
     }
 
     func dispose() {
-        resultChannel?.failure(nil)
+        guard let channel = resultChannel else {
+            return
+        }
+
         resultChannel = nil
+        channel.failure(nil)
     }
 }

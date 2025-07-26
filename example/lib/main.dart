@@ -81,12 +81,15 @@ class _MyAppState extends State<MyApp> {
 
     if (permission != LocationPermission.granted) return;
 
-    _subscription = FlutterLocation.onChanged.listen(_onLocationChange);
+    // _subscription = FlutterLocation.onChanged.listen(_onLocationChange);
+    final data = await FlutterLocation.getCurrent();
+
+    _onLocationChange(data);
   }
 
   void _onLocationChange(LocationData data) {
     _currentLocationData =
-        'Latitude: ${data.latitude}\nLongitude: ${data.longitude}\nAccuracy: ${data.accuracy}\nTimestamp: ${data.timestamps.toIso8601String()}\nAltitudeEllipsoid: ${data.altitudeEllipsoid}\nAltitudeMSL: ${data.altitudeMSL}\nAltitudeAccuracy: ${data.altitudeAccuracy}\nHeading: ${data.heading}\nHeadingAccuracy: ${data.headingAccuracy}\nSpeed: ${data.speed}\nSpeed Accuracy: ${data.speedAccuracy}\nFloor: ${data.floor}';
+        '  Latitude: ${data.latitude}\n  Longitude: ${data.longitude}\n  Accuracy: ${data.accuracy}\n  Timestamp: ${data.timestamps.toIso8601String()}\n  AltitudeEllipsoid: ${data.altitudeEllipsoid}\n  AltitudeMSL: ${data.altitudeMSL}\n  AltitudeAccuracy: ${data.altitudeAccuracy}\n  Heading: ${data.heading}\n  HeadingAccuracy: ${data.headingAccuracy}\n  Speed: ${data.speed}\n  Speed Accuracy: ${data.speedAccuracy}\n  Floor: ${data.floor}';
     setState();
   }
 
@@ -116,15 +119,17 @@ class _MyAppState extends State<MyApp> {
       appBar: AppBar(
         title: const Text('Plugin flutter_location_ffi example app'),
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text("Current Permission: ${FlutterLocation.checkPermission()}"),
+            const SizedBox(height: 4),
             if (_currentLocationData.isNotEmpty)
-              Text("Current LocationData\n$_currentLocationData"),
-            TextButton(onPressed: _onInit, child: const Text('Try again')),
+              Text("Current LocationData:\n\n$_currentLocationData"),
+            TextButton(onPressed: _onInit, child: const Text('Get current')),
             TextButton(onPressed: _pause, child: const Text("Pause")),
             TextButton(onPressed: _resume, child: const Text("Resume")),
             const TextButton(

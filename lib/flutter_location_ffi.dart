@@ -206,6 +206,11 @@ final class LocationData {
   factory LocationData.fromResult(Object? data) {
     return LocationData(data as List<Object?>);
   }
+
+  @override
+  String toString() {
+    return 'LocationData(isGpsEnabled: $isGpsEnabled, latitude: $latitude, longitude: $longitude)';
+  }
 }
 
 final _setSettings = _lib

@@ -3,20 +3,21 @@ import Foundation
 import result_channel
 
 final class CoreLocationManager: NSObject, LocationManager {
-    private let locationManager: CLLocationManager
-    var settings: iOSLocationSettings
+    private let locationManager: CLLocationManager = CLLocationManager()
+    let memoryIndex: Int
+    let settings: iOSLocationSettings
     var channel: ResultChannel?
-    var delegate: LocationPermissionDelegate?
+    var delegate: LifecycleKeeperDelegate?
 
-    init(locationManager: CLLocationManager, settings: iOSLocationSettings) {
-        self.locationManager = locationManager
+    init(index: Int, settings: iOSLocationSettings) {
+        self.memoryIndex = index
         self.settings = settings
 
         super.init()
 
-        locationManager.delegate = self
+        self.locationManager.delegate = self
 
-        initSettings()
+        self.initSettings()
     }
 
     private func initSettings() {
@@ -46,17 +47,5 @@ final class CoreLocationManager: NSObject, LocationManager {
                 self.locationManager.startUpdatingLocation()
             }
         }
-    }
-
-    func setSettings(settings: iOSLocationSettings) {
-        self.settings = settings
-
-        initSettings()
-    }
-
-    func dispose() {
-        channel?.failure(nil)
-        channel = nil
-        delegate = nil
     }
 }

@@ -3,18 +3,20 @@ import Foundation
 import result_channel
 
 final class CoreLocationStreamManager: NSObject, LocationStreamManager {
-    private let locationManager: CLLocationManager = CLLocationManager()
+    private let locationManager: CLLocationManager
     var settings: iOSLocationSettings
     var channelStream: ResultChannel?
+    var delegate: LocationPermissionDelegate?
 
-    init(settings: iOSLocationSettings) {
+    init(locationManager: CLLocationManager, settings: iOSLocationSettings) {
+        self.locationManager = locationManager
         self.settings = settings
 
         super.init()
-        
+
         locationManager.delegate = self
 
-        initSettings()
+        self.initSettings()
     }
 
     private func initSettings() {
@@ -33,9 +35,9 @@ final class CoreLocationStreamManager: NSObject, LocationStreamManager {
     }
 
     func startUpdates(resultChannel: ResultChannel) {
-        if channelStream != nil {
-            resultChannel.failure(ErrorMessages.startUpdatesFailed)
-            return
+        if let channel = channelStream {
+            channelStream = nil
+            channel.failure(nil)
         }
 
         DispatchQueue.global(qos: .userInitiated).async {
@@ -54,7 +56,7 @@ final class CoreLocationStreamManager: NSObject, LocationStreamManager {
         guard let channel = channelStream else {
             return
         }
-        
+
         self.locationManager.stopUpdatingLocation()
 
         channelStream = nil

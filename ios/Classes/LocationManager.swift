@@ -1,6 +1,6 @@
 import Foundation
 import result_channel
 
-protocol LocationManager: LocationSettingsConfigurable {
+protocol LocationManager {
     func getCurrent(resultChannel: ResultChannel)
 }
