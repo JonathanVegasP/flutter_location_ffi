@@ -7,7 +7,7 @@ import dev.jonathanvegasp.result_channel.toLong
 class AndroidLocationSettings private constructor(
     val priority: AndroidLocationPriorityStrategy,
     val intervalMs: Long,
-    val accuracyFilter: Float,
+    private val accuracyFilter: Float,
     val granularity: Int,
     val waitForAccurateLocation: Boolean,
     val durationMs: Long,

@@ -67,7 +67,12 @@ abstract class NmeaManager : NmeaDataReceiver, Destroyable {
 
         if (!hasDigit) return
 
-        location.extras!!.putDouble(LocationDataFactory.altitudeMslKey, if (isNegative) -result else result)
+        location.extras!!.putDouble(
+            LocationDataFactory.altitudeMslKey, when {
+                isNegative -> -result
+                else -> result
+            }
+        )
     }
 
     override fun onDataReceived(nmea: String, calendar: Calendar) {

@@ -2,7 +2,6 @@ package dev.jonathanvegasp.flutter_location_ffi
 
 import android.location.GpsStatus
 import android.location.LocationManager
-import android.util.Log
 import java.util.Calendar
 
 @Suppress("DEPRECATION")
