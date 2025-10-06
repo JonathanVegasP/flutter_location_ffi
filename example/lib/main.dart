@@ -26,11 +26,12 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   StreamSubscription<LocationData>? _subscription;
   var _currentLocationData = "";
+  var _isServiceEnabled = false;
 
   @override
   void initState() {
-    _onInit();
     super.initState();
+    _onInit();
   }
 
   void _onInit() async {
@@ -46,6 +47,7 @@ class _MyAppState extends State<MyApp> {
           priority: LocationPriority.best,
           accuracyFilter: 50.0,
           waitForAccurateLocation: true,
+          showLocationServiceDialogWhenRequested: true,
           maxUpdates: 0,
           durationMs: 0,
           minUpdateIntervalMs: 1000,
@@ -81,16 +83,23 @@ class _MyAppState extends State<MyApp> {
 
     if (permission != LocationPermission.granted) return;
 
-    // _subscription = FlutterLocation.onChanged.listen(_onLocationChange);
-    final data = await FlutterLocation.getCurrent();
+    _subscription = FlutterLocation.onChanged.listen(_onLocationChange);
+    // final data = await FlutterLocation.getCurrent();
 
-    _onLocationChange(data);
+    // _onLocationChange(data);
+  }
+
+  void _checkIfIsServiceEnabled() async {
+    _isServiceEnabled = await FlutterLocation.isServiceEnabled();
+    setState();
   }
 
   void _onLocationChange(LocationData data) {
     _currentLocationData =
-        '  Latitude: ${data.latitude}\n  Longitude: ${data.longitude}\n  Accuracy: ${data.accuracy}\n  Timestamp: ${data.timestamps.toIso8601String()}\n  AltitudeEllipsoid: ${data.altitudeEllipsoid}\n  AltitudeMSL: ${data.altitudeMSL}\n  AltitudeAccuracy: ${data.altitudeAccuracy}\n  Heading: ${data.heading}\n  HeadingAccuracy: ${data.headingAccuracy}\n  Speed: ${data.speed}\n  Speed Accuracy: ${data.speedAccuracy}\n  Floor: ${data.floor}';
-    setState();
+        '  IsLocationAvailable: ${data.isLocationAvailable}\n  Latitude: ${data.latitude}\n  Longitude: ${data.longitude}\n  Accuracy: ${data.accuracy}\n  Timestamp: ${data.timestamps.toIso8601String()}\n  AltitudeEllipsoid: ${data.altitudeEllipsoid}\n  AltitudeMSL: ${data.altitudeMSL}\n  AltitudeAccuracy: ${data.altitudeAccuracy}\n  Heading: ${data.heading}\n  HeadingAccuracy: ${data.headingAccuracy}\n  Speed: ${data.speed}\n  Speed Accuracy: ${data.speedAccuracy}\n  Floor: ${data.floor}';
+    if(mounted) {
+      setState();
+    }
   }
 
   static void _() {}
@@ -98,13 +107,6 @@ class _MyAppState extends State<MyApp> {
   @override
   void setState([VoidCallback fn = _]) {
     super.setState(fn);
-  }
-
-  @override
-  void reassemble() {
-    _subscription?.pause();
-    _subscription?.resume();
-    super.reassemble();
   }
 
   @override
@@ -127,9 +129,14 @@ class _MyAppState extends State<MyApp> {
           children: [
             Text("Current Permission: ${FlutterLocation.checkPermission()}"),
             const SizedBox(height: 4),
+            Text("Service Status: $_isServiceEnabled"),
             if (_currentLocationData.isNotEmpty)
               Text("Current LocationData:\n\n$_currentLocationData"),
             TextButton(onPressed: _onInit, child: const Text('Get current')),
+            TextButton(
+              onPressed: _checkIfIsServiceEnabled,
+              child: const Text("Check Service Status"),
+            ),
             TextButton(onPressed: _pause, child: const Text("Pause")),
             TextButton(onPressed: _resume, child: const Text("Resume")),
             const TextButton(

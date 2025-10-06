@@ -1,18 +1,20 @@
-package dev.jonathanvegasp.flutter_location_ffi
+package dev.jonathanvegasp.flutter_location_ffi.location.googleplay
 
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationAvailability
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
+import dev.jonathanvegasp.flutter_location_ffi.location.LocationDataFactory
+import dev.jonathanvegasp.flutter_location_ffi.nmea.NmeaManager
+import dev.jonathanvegasp.flutter_location_ffi.settings.AndroidLocationSettings
 import dev.jonathanvegasp.result_channel.ResultChannel
 
-class FusedLocationStreamCallback(
+internal class FusedLocationStreamCallback(
     private var settings: AndroidLocationSettings,
     private val channel: ResultChannel,
-    private val statusChecker: StatusChecker,
     private val locationProviderClient: FusedLocationProviderClient,
     private val nmeaManager: NmeaManager
-) : LocationCallback(), Destroyable {
+) : LocationCallback() {
 
     fun setSettings(settings: AndroidLocationSettings) {
         this.settings = settings
@@ -34,12 +36,12 @@ class FusedLocationStreamCallback(
     }
 
     override fun onLocationAvailability(p0: LocationAvailability) {
-        if (statusChecker.isEnabled()) return
+        if (p0.isLocationAvailable) return
 
         channel.success(LocationDataFactory.create())
     }
 
-    override fun onDestroy() {
+    fun onDestroy() {
         locationProviderClient.removeLocationUpdates(this)
 
         channel.failure(null)

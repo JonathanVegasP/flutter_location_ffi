@@ -11,6 +11,7 @@ buildscript {
     dependencies {
         classpath("com.android.tools.build:gradle:8.7.3")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
+        classpath("org.jacoco:org.jacoco.core:0.8.13")
     }
 }
 
@@ -23,22 +24,60 @@ allprojects {
 
 apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
+apply plugin: "jacoco"
+
+jacoco {
+    toolVersion = "0.8.13"
+}
+
+tasks.register('jacocoTestReport', JacocoReport) {
+    dependsOn['testDebugUnitTest']
+
+    def fileFilter = [
+            '**/R.class',
+            '**/R$*.class',
+            '**/BuildConfig.*',
+            '**/Manifest*.*',
+            '**/*Test*.*',
+            'android/**/*.*'
+    ]
+
+    def buildDir = getLayout().getBuildDirectory().get()
+
+    def kotlinTree = fileTree(dir: "$buildDir/tmp/kotlin-classes/debug", excludes: fileFilter)
+    def mainSrc = "$projectDir/src/main/java"
+    def mainKtSrc = "$projectDir/src/main/kotlin"
+
+    sourceDirectories.setFrom(files([mainSrc, mainKtSrc]))
+    classDirectories.setFrom(files([kotlinTree]))
+
+    executionData.setFrom(fileTree(dir: "$buildDir", includes: [
+            "**/*.exec",
+            "**/*.ec"
+    ]))
+
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        csv.required.set(true)
+    }
+
+    doLast {
+        println "Jacoco report is available at: file:///${buildDir.toString().replace("\\", "/")}/reports/jacoco/jacocoTestReport/html/index.html"
+    }
+}
+
+tasks.withType(Test).configureEach {
+    jacoco.includeNoLocationClasses = true
+    jacoco.excludes = ['jdk.internal.*']
+    finalizedBy(tasks.named("jacocoTestReport"))
+}
 
 android {
     namespace = "dev.jonathanvegasp.flutter_location_ffi"
 
     compileSdk = 35
     ndkVersion = "27.2.12479018"
-
-    externalNativeBuild {
-        cmake {
-            path = "../src/CMakeLists.txt"
-        }
-    }
-
-    buildFeatures {
-        prefab true
-    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -56,44 +95,54 @@ android {
 
     defaultConfig {
         minSdk = 21
-        externalNativeBuild {
-            cmake {
-                arguments "-Wl,--strip-all", "-Wl,--as-needed", "-Wl,--gc-sections", "-Wl,--relax", "-Wl,--reduce-memory-overheads", "-Wl,--build-id=none", "-DANDROID_STL=none"
-                cppFlags "-fno-ident", "-nostdlib++", "-nostdinc++", "-fPIC", "-fno-async-exceptions", "-fno-asynchronous-unwind-tables", "-fdata-sections", "-fno-exceptions", "-ffunction-sections", "-fno-plt", "-fno-rtti", "-fno-rtti-data", "-fno-semantic-interposition", "-fno-stack-clash-protection", "-fno-stack-protector", "-fno-threadsafe-statics", "-fno-unwind-tables", "-fno-use-cxa-atexit", "-fvisibility=hidden", "-fwhole-program-vtables", "-flto", "-O3"
-            }
-        }
+    }
+
+    configurations {
+        mockitoAgent
     }
 
     buildTypes {
-        release {
-            externalNativeBuild {
-                cmake {
-                    arguments "-Wl,--strip-all", "-Wl,--as-needed", "-Wl,--gc-sections", "-Wl,--relax", "-Wl,--reduce-memory-overheads", "-Wl,--build-id=none", "-DANDROID_STL=none"
-                    cppFlags "-fno-ident", "-nostdlib++", "-nostdinc++", "-fPIC", "-fno-async-exceptions", "-fno-asynchronous-unwind-tables", "-fdata-sections", "-fno-exceptions", "-ffunction-sections", "-fno-plt", "-fno-rtti", "-fno-rtti-data", "-fno-semantic-interposition", "-fno-stack-clash-protection", "-fno-stack-protector", "-fno-threadsafe-statics", "-fno-unwind-tables", "-fno-use-cxa-atexit", "-fvisibility=hidden", "-fwhole-program-vtables", "-flto", "-O3", "-DNDEBUG"
-                }
-            }
+        debug {
+            testCoverageEnabled = true
         }
     }
 
     dependencies {
         implementation("com.google.android.gms:play-services-location:21.3.0")
-        testImplementation("org.jetbrains.kotlin:kotlin-test")
-        testImplementation("org.mockito:mockito-core:5.18.0")
+        testImplementation("junit:junit:4.13.2")
+        testImplementation("org.mockito:mockito-core:5.17.0")
+        testImplementation("org.robolectric:robolectric:4.15.1")
+        mockitoAgent("org.mockito:mockito-core:5.17.0") {
+            transitive = false
+        }
     }
 
     testOptions {
-        unitTests.all {
-            useJUnitPlatform()
-
-            testLogging {
-                events "passed", "skipped", "failed", "standardOut", "standardError"
-                outputs.upToDateWhen { false }
-                showStandardStreams = true
+        unitTests {
+            includeAndroidResources = true
+            all {
+                jacoco {
+                    includeNoLocationClasses = true
+                    excludes = ['jdk.internal.*']
+                }
+                jvmArgs("-javaagent:${configurations.mockitoAgent.asPath}")
+                jvmArgs('--add-opens', 'java.base/java.lang=ALL-UNNAMED')
+                jvmArgs('--add-opens', 'java.base/java.util=ALL-UNNAMED')
+                jvmArgs('--add-opens', 'java.base/java.lang.reflect=ALL-UNNAMED')
+                jvmArgs('--add-opens', 'java.base/java.text=ALL-UNNAMED')
+                jvmArgs('--add-opens', 'java.base/java.io=ALL-UNNAMED')
+                jvmArgs('--add-opens', 'java.base/java.net=ALL-UNNAMED')
+                jvmArgs('--add-opens', 'java.base/java.nio=ALL-UNNAMED')
+                jvmArgs('--add-opens', 'java.base/java.util.concurrent=ALL-UNNAMED')
+                jvmArgs('--add-opens', 'java.base/java.util.concurrent.atomic=ALL-UNNAMED')
+                jvmArgs('--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED')
+                jvmArgs('--add-opens', 'java.base/sun.security.util=ALL-UNNAMED')
+                testLogging {
+                    events("passed", "skipped", "failed", "standardOut", "standardError")
+                    outputs.upToDateWhen { false }
+                    showStandardStreams = true
+                }
             }
         }
     }
-}
-
-tasks.named('clean') {
-    delete "${projectDir}/.cxx"
 }
